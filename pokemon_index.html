@@ -12,11 +12,36 @@
 <body>
 
     <h1>Pokemon Index</h1>
+    <div class="filter-container"></div>
     <div class="pokemon-container"></div>
 
     <script>
 
+        const filterContainer = document.querySelector('.filter-container')
         const pokemonContainer = document.querySelector('.pokemon-container')
+
+        // Funksjon for å fetche pokemon typer fra APIet 
+        function fetchPokemonTypes() {
+            fetch('https://pokeapi.co/api/v2/type')
+                .then(response => response.json())
+                .then(data => createTypeButtons(data.results))
+                .catch(error => console.error('Error fetching Pokémon types', error));
+        }
+
+        // Funksjon for å lage en knapp for hver av de 18 pokemon typene - pluss fjerning av de to siste som heter unkown og shadow
+        function createTypeButtons(types) {
+            for (let i = 0; i < 18 && i < types.length; i++) {
+                const type = types[i];
+                const typeBtn = document.createElement('button');
+                typeBtn.textContent = capitalizeFirstLetter(type.name);
+                typeBtn.classList.add('typeBtn')
+                typeBtn.addEventListener('click', () => filterType(type.name));
+                filterContainer.appendChild(typeBtn);
+            }
+        }
+
+
+        fetchPokemonTypes();
 
         // Funksjon for å fetche data fra APIet 
         function fetchPokemon(id) {
@@ -32,6 +57,8 @@
                 fetchPokemon(i);
             }
         }
+
+
 
         // Funksjon for å endre til stor bokstav på navn og type 
         function capitalizeFirstLetter(string) {
@@ -62,12 +89,15 @@
 
             const saveBtn = document.createElement('button');
             saveBtn.textContent = 'Lagre';
+            saveBtn.classList.add('saveBtn');
 
             const deleteBtn = document.createElement('button')
             deleteBtn.textContent = 'Slett'
+            deleteBtn.classList.add('deleteBtn');
 
             const editBtn = document.createElement('button')
             editBtn.textContent = 'Rediger'
+            editBtn.classList.add('editBtn')
 
 
             card.appendChild(imageContainer)

@@ -27,14 +27,50 @@ h1 {
   box-shadow: 0 3px 15px rgba(100, 100, 100, 0.5);
 }
 
-/* Knapp fra https://getcssscan.com/css-buttons-examples */
+/* Knapper fra https://getcssscan.com/css-buttons-examples */
 
-button {
+.saveBtn,
+.deleteBtn,
+.editBtn {
   background-color: #bfc3fc;
   border-radius: 8px;
   border-style: none;
   box-sizing: border-box;
   color: #ffffff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  height: 40px;
+  line-height: 20px;
+  list-style: none;
+  outline: none;
+  padding: 10px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transition: color 100ms;
+  vertical-align: baseline;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin: 4px;
+}
+
+.filter-container {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 10px;
+}
+
+.typeBtn {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border-style: none;
+  box-sizing: border-box;
+  color: #bfc3fc;
   cursor: pointer;
   display: inline-block;
   font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial,
