@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokemon Index</title>
     <link rel="stylesheet" href="./pokemon_index.css">
+
 </head>
 
 
@@ -42,6 +43,20 @@
                     filterType(type.name);
                     activeButton(typeBtn);
                 });
+
+                typeBtn.addEventListener('mouseenter', () => {
+                    typeBtn.style.backgroundColor = typeColors[type.name];
+                    typeBtn.style.boxShadow = `0 0 22px ${typeColors[type.name]}`;
+                    typeBtn.style.color = "#FFFF";
+                });
+
+                typeBtn.addEventListener('mouseleave', () => {
+                    typeBtn.style.backgroundColor = '';
+                    typeBtn.style.boxShadow = '';
+                    typeBtn.style.color = "#bfc3fc";
+                });
+
+
                 filterContainer.appendChild(typeBtn);
             }
 
@@ -82,6 +97,38 @@
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
+        // Definere de forskjellige fargene til pokemon typene, lånt fargene fra https://gist.github.com/apaleslimghost/0d25ec801ca4fc43317bcff298af43c3
+
+        const typeColors = {
+            normal: '#A8A77A',
+            fire: '#EE8130',
+            water: '#6390F0',
+            electric: '#F7D02C',
+            grass: '#7AC74C',
+            ice: '#96D9D6',
+            fighting: '#C22E28',
+            poison: '#A33EA1',
+            ground: '#E2BF65',
+            flying: '#A98FF3',
+            psychic: '#F95587',
+            bug: '#A6B91A',
+            rock: '#B6A136',
+            ghost: '#735797',
+            dragon: '#6F35FC',
+            dark: '#705746',
+            steel: '#B7B7CE',
+            fairy: '#D685AD',
+        };
+
+        // Funksjon for å hente fargene for hver av pokemon typene.
+        function showTypeColor(type) {
+            if (type in typeColors) {
+                return typeColors[type];
+            } else {
+                return "#FFFF";
+            }
+        }
+
         // Funksjon for å lage pokemon kortene med bilde, navn, type og diverse knapper 
         function createPokemonCard(pokemon) {
             const card = document.createElement('div');
@@ -116,6 +163,8 @@
             editBtn.textContent = 'Rediger'
             editBtn.classList.add('editBtn')
 
+            const typeColor = showTypeColor(pokemon.types[0].type.name);
+            card.style.boxShadow = `inset 0 0 22px ${typeColor}`;
 
             card.appendChild(imageContainer)
             card.appendChild(name)
