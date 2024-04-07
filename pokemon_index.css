@@ -65,7 +65,8 @@ h1 {
   gap: 10px;
 }
 
-.typeBtn {
+.typeBtn,
+.clearBtn {
   background-color: #ffffff;
   border-radius: 8px;
   border-style: none;

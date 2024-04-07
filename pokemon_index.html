@@ -17,6 +17,9 @@
 
     <script>
 
+        // Globale variabler
+        let allPokemons = [];
+
         const filterContainer = document.querySelector('.filter-container')
         const pokemonContainer = document.querySelector('.pokemon-container')
 
@@ -35,9 +38,22 @@
                 const typeBtn = document.createElement('button');
                 typeBtn.textContent = capitalizeFirstLetter(type.name);
                 typeBtn.classList.add('typeBtn')
-                typeBtn.addEventListener('click', () => filterType(type.name));
+                typeBtn.addEventListener('click', () => {
+                    filterType(type.name);
+                    activeButton(typeBtn);
+                });
                 filterContainer.appendChild(typeBtn);
             }
+
+            // Legger til en knapp for å fjerne filtreringen
+            const clearBtn = document.createElement('button');
+            clearBtn.textContent = 'Fjern Filtrering';
+            clearBtn.classList.add('clearBtn');
+            clearBtn.addEventListener('click', () => {
+                clearFilters();
+                activeButton(clearBtn);
+            });
+            filterContainer.appendChild(clearBtn);
         }
 
 
@@ -47,7 +63,10 @@
         function fetchPokemon(id) {
             fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
                 .then(response => response.json())
-                .then((data) => createPokemonCard(data))
+                .then((data) => {
+                    allPokemons.push(data);
+                    createPokemonCard(data)
+                })
                 .catch(error => console.error('Error fetching Pokemons', error));
         }
 
@@ -57,8 +76,6 @@
                 fetchPokemon(i);
             }
         }
-
-
 
         // Funksjon for å endre til stor bokstav på navn og type 
         function capitalizeFirstLetter(string) {
@@ -112,6 +129,38 @@
 
         // Fetcher 50 pokemons 
         fetchPokemons(50);
+
+        // Fjern alle eksisterende pokemonkort fra nettsiden og filtrer pokemons basert på den første typen. Samtidig lage nye pokemonkort for de som blir filtrert
+        function filterType(typeName) {
+            pokemonContainer.innerHTML = '';
+
+            const filteredPokemons = allPokemons.filter(pokemon => {
+                return pokemon.types[0].type.name === typeName.toLowerCase();
+            });
+
+            if (filteredPokemons.length === 0) {
+                setTimeout(() => {
+                    alert(`Ingen av de 50 pokemonene er av typen ${capitalizeFirstLetter(typeName)}, dessverre! 😭`);
+                }, 100);
+
+            } else {
+                filteredPokemons.forEach(pokemon => createPokemonCard(pokemon));
+            }
+        }
+
+        // Tømmer filtercontaineren for filtre og vise alle pokemons
+        function clearFilters() {
+            filterContainer.querySelectorAll('.active').forEach(btn => btn.classList.remove('active'));
+            pokemonContainer.innerHTML = '';
+            allPokemons.forEach(pokemon => createPokemonCard(pokemon));
+        }
+
+        // Endrer den aktive knappen ved å fjerne aktiv fra alle knapper og legge den til den som nå er klikket på.
+        function activeButton(button) {
+            filterContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'))
+            button.classList.add('active');
+        }
+
     </script>
 </body>
 
