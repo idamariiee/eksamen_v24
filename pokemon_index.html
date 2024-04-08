@@ -9,11 +9,11 @@
 
 </head>
 
-
 <body>
 
     <h1>Pokemon Index</h1>
     <div class="filter-container"></div>
+    <div class="saved-pokemon-container"></div>
     <form id="pokemon-form">
         <label for="pokemon-name">Navn:</label>
         <input type="text" id="pokemon-name" required>
@@ -30,6 +30,7 @@
 
         const filterContainer = document.querySelector('.filter-container')
         const pokemonContainer = document.querySelector('.pokemon-container')
+        const savedPokemonContainer = document.querySelector('.saved-pokemon-container')
 
         // Funksjon for å fetche pokemon typer fra APIet 
         function fetchPokemonTypes() {
@@ -79,7 +80,6 @@
             });
             filterContainer.appendChild(clearBtn);
         }
-
 
         // Funksjon for å fetche data fra APIet 
         function fetchPokemon(id) {
@@ -134,13 +134,13 @@
         // Funksjon for å lage pokemon kortene med bilde, navn, type og diverse knapper 
         function createPokemonCard(pokemon) {
             const card = document.createElement('div');
-            card.classList.add('pokemon-block')
+            card.classList.add('pokemon-block');
 
             const imageContainer = document.createElement('div');
             imageContainer.classList.add('img-container');
 
             const image = document.createElement('img');
-            image.src = pokemon.sprites.front_default
+            image.src = pokemon.sprites.front_default;
 
             if (image.src.endsWith('default.png')) {
                 image.classList.add('default-image');
@@ -154,30 +154,32 @@
 
             const type = document.createElement('p');
             type.classList.add('type');
-            name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
             type.textContent = pokemon.types[0].type.name.charAt(0).toUpperCase() + pokemon.types[0].type.name.slice(1);
 
             const saveBtn = document.createElement('button');
             saveBtn.textContent = 'Lagre';
             saveBtn.classList.add('saveBtn');
+            saveBtn.addEventListener('click', () => {
+                storePokemonCard(pokemon);
+            });
 
-            const deleteBtn = document.createElement('button')
-            deleteBtn.textContent = 'Slett'
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Slett';
             deleteBtn.classList.add('deleteBtn');
 
-            const editBtn = document.createElement('button')
-            editBtn.textContent = 'Rediger'
-            editBtn.classList.add('editBtn')
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Rediger';
+            editBtn.classList.add('editBtn');
 
             const typeColor = showTypeColor(pokemon.types[0].type.name);
             card.style.boxShadow = `inset 0 0 22px ${typeColor}`;
 
-            card.appendChild(imageContainer)
-            card.appendChild(name)
-            card.appendChild(type)
-            card.appendChild(saveBtn)
-            card.appendChild(deleteBtn)
-            card.appendChild(editBtn)
+            card.appendChild(imageContainer);
+            card.appendChild(name);
+            card.appendChild(type);
+            card.appendChild(saveBtn);
+            card.appendChild(deleteBtn);
+            card.appendChild(editBtn);
 
             pokemonContainer.appendChild(card);
         }
@@ -186,11 +188,11 @@
         function filterType(typeName) {
             pokemonContainer.innerHTML = '';
 
-            const filteredApiPokemons = allPokemons.filter(pokemon => {
+            const filteredUserPokemons = userPokemons.filter(pokemon => {
                 return pokemon.types[0].type.name === typeName.toLowerCase();
             });
 
-            const filteredUserPokemons = userPokemons.filter(pokemon => {
+            const filteredApiPokemons = allPokemons.filter(pokemon => {
                 return pokemon.types[0].type.name === typeName.toLowerCase();
             });
 
@@ -219,10 +221,111 @@
             button.classList.add('active');
         }
 
-        // Legg til det nye kortet brukeren lager og vise det frem
+        // Hente lagrede pokemons fra local storage, legge pokemons til userpokemons arrayet og vise frem kortene
         function storePokemonCard(pokemon) {
             userPokemons.push(pokemon);
             createPokemonCard(pokemon);
+            const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+
+            if (savedPokemons.length >= 5) {
+                alert('Du kan kun lagre 5 kort om gangen, slett ett kort for å få lagre ett nytt.');
+                return;
+            }
+
+            savedPokemons.push(pokemon);
+            localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
+
+            savedPokemonContainer.innerHTML = '';
+
+            savedPokemons.forEach(pokemon => {
+                const card = createSavedPokemonCard(pokemon);
+                savedPokemonContainer.appendChild(card);
+            });
+
+            pokemonContainer.innerHTML = '';
+            const allPokemonsToShow = allPokemons.concat(userPokemons);
+            allPokemonsToShow.forEach(pokemon => createPokemonCard(pokemon));
+        }
+
+        // Henter brukerens pokemon fra lokal lagring
+        function UserPokemonsFromLocalStorage() {
+            const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+            userPokemons = savedPokemons;
+            savedPokemons.forEach(pokemon => createPokemonCard(pokemon));
+
+            pokemonContainer.appendChild(card);
+        }
+
+        // Funksjon for å legge types i dropdown menyen
+        function fillDropdown(types) {
+            const dropdown = document.getElementById('pokemonTypeDropdown');
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.name;
+                option.textContent = type.name.charAt(0).toUpperCase() + type.name.slice(1);
+                dropdown.appendChild(option);
+            });
+        }
+
+        function deletePokemonCard(pokemon) {
+            let savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+            savedPokemons = savedPokemons.filter(p => p.name !== pokemon.name);
+            localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
+        }
+
+        function createSavedPokemonCard(pokemon) {
+            const card = document.createElement('div');
+            card.classList.add('saved-block');
+
+            const imageContainer = document.createElement('div');
+            imageContainer.classList.add('img-container');
+
+            const image = document.createElement('img');
+            image.src = pokemon.sprites.front_default;
+
+            if (image.src.endsWith('default.png')) {
+                image.classList.add('default-image');
+            }
+
+            imageContainer.appendChild(image);
+
+            const name = document.createElement('p');
+            name.classList.add('name');
+            name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+
+            const type = document.createElement('p');
+            type.classList.add('type');
+            type.textContent = pokemon.types[0].type.name.charAt(0).toUpperCase() + pokemon.types[0].type.name.slice(1);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Slett';
+            deleteBtn.classList.add('deleteBtn');
+            deleteBtn.addEventListener('click', () => {
+                deletePokemonCard(pokemon);
+            });
+
+            const typeColor = showTypeColor(pokemon.types[0].type.name);
+            card.style.boxShadow = `inset 0 0 22px ${typeColor}`;
+
+            card.appendChild(imageContainer);
+            card.appendChild(name);
+            card.appendChild(type);
+            card.appendChild(deleteBtn);
+
+            return card;
+
+        }
+
+        function savedPokemons() {
+            const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+
+            savedPokemonContainer.innerHTML = '';
+
+            savedPokemons.forEach(pokemon => {
+                const card = createSavedPokemonCard(pokemon);
+                savedPokemonContainer.appendChild(card);
+            });
+
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -242,28 +345,24 @@
                 savedPokemons.push(newPokemon);
                 localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
 
-                storePokemonCard(newPokemon);
+                savedPokemonContainer.innerHTML = '';
+
+                savedPokemons.forEach(pokemon => {
+                    const card = createSavedPokemonCard(pokemon);
+                    savedPokemonContainer.appendChild(card);
+                });
+
+
 
                 document.getElementById('pokemon-name').value = '';
+
+                storePokemonCard(newPokemon);
             });
 
             fetchPokemonTypes();
             fetchPokemons(50);
-
-            const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
-            savedPokemons.forEach(pokemon => storePokemonCard(pokemon));
+            savedPokemons();
         });
-
-        // Funksjon for å legge types i dropdown menyen
-        function fillDropdown(types) {
-            const dropdown = document.getElementById('pokemonTypeDropdown');
-            types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type.name;
-                option.textContent = type.name.charAt(0).toUpperCase() + type.name.slice(1);
-                dropdown.appendChild(option);
-            });
-        }
 
     </script>
 </body>
