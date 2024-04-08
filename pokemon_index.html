@@ -166,6 +166,10 @@
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'Slett';
             deleteBtn.classList.add('deleteBtn');
+            deleteBtn.addEventListener('click', () => {
+                deletePokemonCard(pokemon);
+                card.remove();
+            });
 
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Rediger';
@@ -351,9 +355,6 @@
                     const card = createSavedPokemonCard(pokemon);
                     savedPokemonContainer.appendChild(card);
                 });
-
-
-
                 document.getElementById('pokemon-name').value = '';
 
                 storePokemonCard(newPokemon);
