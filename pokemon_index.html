@@ -14,12 +14,19 @@
 
     <h1>Pokemon Index</h1>
     <div class="filter-container"></div>
+    <form id="pokemon-form">
+        <label for="pokemon-name">Navn:</label>
+        <input type="text" id="pokemon-name" required>
+        <select id="pokemonTypeDropdown"> </select>
+        <button type="submit">Lag Pokémon</button>
+    </form>
     <div class="pokemon-container"></div>
 
     <script>
 
         // Globale variabler
         let allPokemons = [];
+        let userPokemons = [];
 
         const filterContainer = document.querySelector('.filter-container')
         const pokemonContainer = document.querySelector('.pokemon-container')
@@ -28,7 +35,10 @@
         function fetchPokemonTypes() {
             fetch('https://pokeapi.co/api/v2/type')
                 .then(response => response.json())
-                .then(data => createTypeButtons(data.results))
+                .then(data => {
+                    fillDropdown(data.results);
+                    createTypeButtons(data.results);
+                })
                 .catch(error => console.error('Error fetching Pokémon types', error));
         }
 
@@ -37,7 +47,7 @@
             for (let i = 0; i < 18 && i < types.length; i++) {
                 const type = types[i];
                 const typeBtn = document.createElement('button');
-                typeBtn.textContent = capitalizeFirstLetter(type.name);
+                typeBtn.textContent = type.name.charAt(0).toUpperCase() + type.name.slice(1);
                 typeBtn.classList.add('typeBtn')
                 typeBtn.addEventListener('click', () => {
                     filterType(type.name);
@@ -56,7 +66,6 @@
                     typeBtn.style.color = "#bfc3fc";
                 });
 
-
                 filterContainer.appendChild(typeBtn);
             }
 
@@ -71,8 +80,6 @@
             filterContainer.appendChild(clearBtn);
         }
 
-
-        fetchPokemonTypes();
 
         // Funksjon for å fetche data fra APIet 
         function fetchPokemon(id) {
@@ -90,11 +97,6 @@
             for (let i = 1; i <= number; i++) {
                 fetchPokemon(i);
             }
-        }
-
-        // Funksjon for å endre til stor bokstav på navn og type 
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
         }
 
         // Definere de forskjellige fargene til pokemon typene, lånt fargene fra https://gist.github.com/apaleslimghost/0d25ec801ca4fc43317bcff298af43c3
@@ -140,16 +142,20 @@
             const image = document.createElement('img');
             image.src = pokemon.sprites.front_default
 
+            if (image.src.endsWith('default.png')) {
+                image.classList.add('default-image');
+            }
+
             imageContainer.appendChild(image);
 
             const name = document.createElement('p');
             name.classList.add('name');
-            name.textContent = capitalizeFirstLetter(pokemon.name);
+            name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
 
             const type = document.createElement('p');
             type.classList.add('type');
-            type.textContent = capitalizeFirstLetter(pokemon.types[0].type.name);
-
+            name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+            type.textContent = pokemon.types[0].type.name.charAt(0).toUpperCase() + pokemon.types[0].type.name.slice(1);
 
             const saveBtn = document.createElement('button');
             saveBtn.textContent = 'Lagre';
@@ -176,38 +182,87 @@
             pokemonContainer.appendChild(card);
         }
 
-        // Fetcher 50 pokemons 
-        fetchPokemons(50);
-
         // Fjern alle eksisterende pokemonkort fra nettsiden og filtrer pokemons basert på den første typen. Samtidig lage nye pokemonkort for de som blir filtrert
         function filterType(typeName) {
             pokemonContainer.innerHTML = '';
 
-            const filteredPokemons = allPokemons.filter(pokemon => {
+            const filteredApiPokemons = allPokemons.filter(pokemon => {
                 return pokemon.types[0].type.name === typeName.toLowerCase();
             });
 
+            const filteredUserPokemons = userPokemons.filter(pokemon => {
+                return pokemon.types[0].type.name === typeName.toLowerCase();
+            });
+
+            const filteredPokemons = filteredApiPokemons.concat(filteredUserPokemons);
+
             if (filteredPokemons.length === 0) {
                 setTimeout(() => {
-                    alert(`Ingen av de 50 pokemonene er av typen ${capitalizeFirstLetter(typeName)}, dessverre! 😭`);
+                    alert(`Ingen av de 50 pokemonene er av typen ${typeName.charAt(0).toUpperCase() + typeName.slice(1)}, dessverre! 😭`);
                 }, 100);
-
             } else {
                 filteredPokemons.forEach(pokemon => createPokemonCard(pokemon));
             }
         }
 
-        // Tømmer filtercontaineren for filtre og vise alle pokemons
+        // Tømmer filtercontaineren for filtre og vise alle pokemons, inkludert de nye
         function clearFilters() {
             filterContainer.querySelectorAll('.active').forEach(btn => btn.classList.remove('active'));
             pokemonContainer.innerHTML = '';
-            allPokemons.forEach(pokemon => createPokemonCard(pokemon));
+            const allPokemonsToShow = allPokemons.concat(userPokemons);
+            allPokemonsToShow.forEach(pokemon => createPokemonCard(pokemon));
         }
 
         // Endrer den aktive knappen ved å fjerne aktiv fra alle knapper og legge den til den som nå er klikket på.
         function activeButton(button) {
             filterContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'))
             button.classList.add('active');
+        }
+
+        // Legg til det nye kortet brukeren lager og vise det frem
+        function storePokemonCard(pokemon) {
+            userPokemons.push(pokemon);
+            createPokemonCard(pokemon);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('pokemon-form').addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const name = document.getElementById('pokemon-name').value;
+                const type = document.getElementById('pokemonTypeDropdown').value;
+
+                const newPokemon = {
+                    name: name,
+                    types: [{ type: { name: type } }],
+                    sprites: { front_default: "./images/default.png" }
+                };
+
+                let savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+                savedPokemons.push(newPokemon);
+                localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
+
+                storePokemonCard(newPokemon);
+
+                document.getElementById('pokemon-name').value = '';
+            });
+
+            fetchPokemonTypes();
+            fetchPokemons(50);
+
+            const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+            savedPokemons.forEach(pokemon => storePokemonCard(pokemon));
+        });
+
+        // Funksjon for å legge types i dropdown menyen
+        function fillDropdown(types) {
+            const dropdown = document.getElementById('pokemonTypeDropdown');
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.name;
+                option.textContent = type.name.charAt(0).toUpperCase() + type.name.slice(1);
+                dropdown.appendChild(option);
+            });
         }
 
     </script>
