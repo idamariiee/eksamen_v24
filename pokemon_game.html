@@ -4,11 +4,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./game.css">
     <title>Pokemon Game!</title>
+
 </head>
 
 <body>
 
+    <div class="main-container">
+        <!-- Healthbar for pokemons -->
+        <div class="hero-health-containers">
+            <!-- Charmanders health bar -->
+            <div class="healthbar-container">
+                <div class="healthbar charmander-health"></div>
+                <div class="text-container">
+                    <p id="charmander-name-txt">Charmander</p>
+                    <div class="text-container charmander-health-txt"></div>
+                </div>
+            </div>
+            <!-- Pikachus health bar -->
+            <div class="healthbar-container">
+                <div class="healthbar pikachu-health"></div>
+                <div class="text-container">
+                    <p id="pikachu-name-txt">Pikachu</p>
+                    <div class="text-container pikachu-health-txt"></div>
+                </div>
+            </div>
+            <!-- Bulbasaur health bar -->
+            <div class="healthbar-container">
+                <div class="healthbar bulbasaur-health"></div>
+                <div class="text-container">
+                    <p id="bulbasaur-name-txt">Bulbasaur</p>
+                    <div class="text-container bulbasaur-health-txt"></div>
+                </div>
+            </div>
+        </div>
+        <div class="enemy-health-container">
+            <div class="healthbar-container">
+                <div class="healthbar enemy-health"></div>
+                <div class="text-container">
+                    <p id="enemy-name-txt">Mewtwo</p>
+                    <div class="text-container enemy-health-txt">200 / 200 HP</div>
+                </div>
+            </div>
+        </div>
+        <div class="img-container charmander">
+            <img class="hero" src="" alt="Charmander" />
+        </div>
+        <div class="img-container pikachu">
+            <img class="hero" src="" alt="Pikachu" />
+        </div>
+        <div class="img-container bulbasaur">
+            <img class="hero" src="" alt="bulbasaur" />
+        </div>
+        <div class="enemy-container">
+            <div class="img-container mewtwo-container">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch Charmanders data 
+        fetch("https://pokeapi.co/api/v2/pokemon/charmander/")
+            .then((res) => res.json())
+            .then((data) => {
+                document.querySelector(".charmander img").src = data.sprites.front_default;
+
+                const charmanderHealth = data.stats[5].base_stat;
+                document.querySelector(".charmander-health-txt").textContent = `${charmanderHealth} / ${charmanderHealth} HP`;
+
+                const charmanderHealthBar = document.querySelector(".charmander-health");
+                charmanderHealthBar.style.width = `${(charmanderHealth / 100) * 100}%`;
+            })
+            .catch((error) => console.log("Error fetching Charmander's data:", error));
+
+        // Fetch Pikachu data 
+        fetch("https://pokeapi.co/api/v2/pokemon/pikachu/")
+            .then((res) => res.json())
+            .then((data) => {
+                document.querySelector(".pikachu img").src = data.sprites.front_default;
+
+                const pikachuHealth = data.stats[5].base_stat;
+                document.querySelector(".pikachu-health-txt").textContent = `${pikachuHealth} / ${pikachuHealth} HP`;
+
+                const pikachuHealthBar = document.querySelector(".pikachu-health");
+                pikachuHealthBar.style.width = `${(pikachuHealth / 100) * 100}%`;
+            })
+            .catch((error) => console.log("Error fetching Pikachu's data:", error));
+
+        // Fetch Bulbasaur data 
+        fetch("https://pokeapi.co/api/v2/pokemon/bulbasaur/")
+            .then((res) => res.json())
+            .then((data) => {
+                document.querySelector(".bulbasaur img").src = data.sprites.front_default;
+
+                const bulbasaurHealth = data.stats[5].base_stat;
+                document.querySelector(".bulbasaur-health-txt").textContent = `${bulbasaurHealth} / ${bulbasaurHealth} HP`;
+
+                const bulbasaurHealthBar = document.querySelector(".bulbasaur-health");
+                bulbasaurHealthBar.style.width = `${(bulbasaurHealth / 100) * 100}%`;
+            })
+            .catch((error) => console.log("Error fetching bulbasaur data:", error));
+
+        // Fetch Mewtwos data 
+        fetch("https://pokeapi.co/api/v2/pokemon/mewtwo/")
+            .then((res) => res.json())
+            .then((data) => {
+                document.querySelector(".mewtwo-container").innerHTML = `<img class="mewtwo" src="${data.sprites.front_default}" alt="Mewtwo" />`;
+
+                const mewtwoHealth = data.stats[5].base_stat;
+                document.querySelector(".enemy-health-txt").textContent = `${mewtwoHealth} / ${mewtwoHealth} HP`;
+
+                const mewtwoHealthBar = document.querySelector(".enemy-health");
+                mewtwoHealthBar.style.width = `${(mewtwoHealth / 100) * 100}%`;
+            })
+            .catch((error) => console.log("Error fetching Mewtwo's data:", error));
+
+        // Event listeners for knapper
+        const switchBtn = document.querySelector('.switch-btn');
+        const runBtn = document.querySelector('.run-btn');
+
+        switchBtn.addEventListener("click", () => {
+        });
+
+        runBtn.addEventListener("click", () => {
+        });
+
+    </script>
 </body>
 
 </html>
