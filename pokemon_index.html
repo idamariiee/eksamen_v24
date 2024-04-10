@@ -228,27 +228,38 @@
         // Hente lagrede pokemons fra local storage, legge pokemons til userpokemons arrayet og vise frem kortene
         function storePokemonCard(pokemon) {
             userPokemons.push(pokemon);
-            createPokemonCard(pokemon);
-            const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+            createPokemonCard(pokemon); const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
 
-            if (savedPokemons.length >= 5) {
-                alert('Du kan kun lagre 5 kort om gangen, slett ett kort for å få lagre ett nytt.');
+            const isAlreadySaved = savedPokemons.some(savedPokemon => savedPokemon.name === pokemon.name);
+            if (isAlreadySaved) {
                 return;
             }
 
             savedPokemons.push(pokemon);
+
+            if (savedPokemons.length > 5) {
+                alert('Du kan kun lagre opptil 5 pokemon om gangen, slett en pokemon for å lagre en ny!');
+                return;
+            }
+
             localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
 
             savedPokemonContainer.innerHTML = '';
-
-            savedPokemons.forEach(pokemon => {
-                const card = createSavedPokemonCard(pokemon);
+            savedPokemons.forEach(savedPokemon => {
+                const card = createSavedPokemonCard(savedPokemon);
                 savedPokemonContainer.appendChild(card);
             });
 
+            // Oppdater container for alle pokemons med pokemons som er lagt til
             pokemonContainer.innerHTML = '';
             const allPokemonsToShow = allPokemons.concat(userPokemons);
             allPokemonsToShow.forEach(pokemon => createPokemonCard(pokemon));
+
+            if (!isAlreadySaved) {
+                userPokemons.push(pokemon);
+                const card = createPokemonCard(pokemon);
+                pokemonContainer.appendChild(card);
+            }
         }
 
         // Henter brukerens pokemon fra lokal lagring
