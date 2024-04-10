@@ -44,7 +44,7 @@
                 <div class="healthbar enemy-health"></div>
                 <div class="text-container">
                     <p id="enemy-name-txt">Mewtwo</p>
-                    <div class="text-container enemy-health-txt">200 / 200 HP</div>
+                    <div class="text-container enemy-health-txt"></div>
                 </div>
             </div>
         </div>
@@ -64,55 +64,86 @@
     </div>
 
     <script>
-        // Fetch Charmanders data 
+
+        let pokemonArray = [];
+        let mewtwoObject = {};
+
         fetch("https://pokeapi.co/api/v2/pokemon/charmander/")
             .then((res) => res.json())
             .then((data) => {
+                pokemonArray.push({
+                    name: data.name,
+                    maxHP: data.stats[0].base_stat,
+                    currentHP: data.stats[0].base_stat,
+                    damage: 100,
+                    alive: true,
+                    id: 0
+                });
+
                 document.querySelector(".charmander img").src = data.sprites.front_default;
 
-                const charmanderHealth = data.stats[5].base_stat;
+                const charmanderHealth = data.stats[0].base_stat;
                 document.querySelector(".charmander-health-txt").textContent = `${charmanderHealth} / ${charmanderHealth} HP`;
 
                 const charmanderHealthBar = document.querySelector(".charmander-health");
-                charmanderHealthBar.style.width = `${(charmanderHealth / 100) * 100}%`;
-            })
-            .catch((error) => console.log("Error fetching Charmander's data:", error));
+                charmanderHealthBar.style.width = `${(charmanderHealth / pokemonArray[0].maxHP) * 100}%`;
+            });
 
-        // Fetch Pikachu data 
         fetch("https://pokeapi.co/api/v2/pokemon/pikachu/")
             .then((res) => res.json())
             .then((data) => {
+                pokemonArray.push({
+                    name: data.name,
+                    maxHP: data.stats[0].base_stat,
+                    currentHP: data.stats[0].base_stat,
+                    damage: 400,
+                    alive: true,
+                    id: 1
+                });
+
                 document.querySelector(".pikachu img").src = data.sprites.front_default;
 
-                const pikachuHealth = data.stats[5].base_stat;
+                const pikachuHealth = data.stats[0].base_stat;
                 document.querySelector(".pikachu-health-txt").textContent = `${pikachuHealth} / ${pikachuHealth} HP`;
 
                 const pikachuHealthBar = document.querySelector(".pikachu-health");
-                pikachuHealthBar.style.width = `${(pikachuHealth / 100) * 100}%`;
-            })
-            .catch((error) => console.log("Error fetching Pikachu's data:", error));
+                pikachuHealthBar.style.width = `${(pikachuHealth / pokemonArray[1].maxHP) * 100}%`;
+            });
 
-        // Fetch Bulbasaur data 
         fetch("https://pokeapi.co/api/v2/pokemon/bulbasaur/")
             .then((res) => res.json())
             .then((data) => {
+                pokemonArray.push({
+                    name: data.name,
+                    maxHP: data.stats[5].base_stat,
+                    currentHP: data.stats[5].base_stat,
+                    damage: 400,
+                    alive: true,
+                    id: 2
+                });
+
                 document.querySelector(".bulbasaur img").src = data.sprites.front_default;
 
                 const bulbasaurHealth = data.stats[5].base_stat;
                 document.querySelector(".bulbasaur-health-txt").textContent = `${bulbasaurHealth} / ${bulbasaurHealth} HP`;
 
                 const bulbasaurHealthBar = document.querySelector(".bulbasaur-health");
-                bulbasaurHealthBar.style.width = `${(bulbasaurHealth / 100) * 100}%`;
-            })
-            .catch((error) => console.log("Error fetching bulbasaur data:", error));
+                bulbasaurHealthBar.style.width = `${(bulbasaurHealth / pokemonArray[2].maxHP) * 100}%`;
+            });
 
         // Fetch Mewtwos data 
         fetch("https://pokeapi.co/api/v2/pokemon/mewtwo/")
             .then((res) => res.json())
             .then((data) => {
+                mewtwoObject = {
+                    maxHP: data.stats[0].base_stat,
+                    currentHP: data.stats[0].base_stat,
+                    damage: 200,
+                    alive: true,
+                };
                 document.querySelector(".mewtwo-container").innerHTML = `<img class="mewtwo" src="${data.sprites.front_default}" alt="Mewtwo" />`;
 
-                const mewtwoHealth = data.stats[5].base_stat;
+                const mewtwoHealth = data.stats[0].base_stat;
                 document.querySelector(".enemy-health-txt").textContent = `${mewtwoHealth} / ${mewtwoHealth} HP`;
 
                 const mewtwoHealthBar = document.querySelector(".enemy-health");
@@ -120,14 +151,22 @@
             })
             .catch((error) => console.log("Error fetching Mewtwo's data:", error));
 
-        // Event listeners for knapper
-        const switchBtn = document.querySelector('.switch-btn');
-        const runBtn = document.querySelector('.run-btn');
+        // Attack funksjon
+        function attackMewtwo(hero) {
+            console.log(`${hero.name} attacks Mewtwo!`);
+        }
 
-        switchBtn.addEventListener("click", () => {
+        // Event listeners for klikk
+        document.querySelector(".img-container.charmander").addEventListener("click", function () {
+            attackMewtwo(pokemonArray[0]);
         });
 
-        runBtn.addEventListener("click", () => {
+        document.querySelector(".img-container.pikachu").addEventListener("click", function () {
+            attackMewtwo(pokemonArray[1]);
+        });
+
+        document.querySelector(".img-container.bulbasaur").addEventListener("click", function () {
+            attackMewtwo(pokemonArray[2]);
         });
 
     </script>
