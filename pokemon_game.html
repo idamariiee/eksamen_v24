@@ -152,22 +152,30 @@
 
 
         // Attack funksjon
-        function attackMewtwo(pokemon) {
+        async function attackMewtwo(pokemon) {
             console.log(`${pokemon.name} attacks Mewtwo!`);
             if (pokemon.alive) {
                 const damage = pokemon.damage;
-                mewtwoObject.currentHP -= damage;
+
+                const abilities = await fetchPokemonAbilities(pokemon.name);
+
+                const selectedAbility = selectAbility(abilities);
+                console.log(`${pokemon.name} uses ${selectedAbility} ability!`);
+
+                if (mewtwoObject.currentHP - damage <= 0) {
+                    mewtwoObject.currentHP = 0;
+                } else {
+                    mewtwoObject.currentHP -= damage;
+                }
 
                 document.querySelector(".enemy-health-txt").textContent = `${mewtwoObject.currentHP} / ${mewtwoObject.maxHP} HP`;
 
                 setTimeout(() => {
-                    alert(`${pokemon.name} har angrepet og gitt ${damage} i damage til ${mewtwoObject.name}!`);
+                    alert(`${pokemon.name} har angrepet og gitt ${damage} i damage til ${mewtwoObject.name} med ${selectedAbility}!`);
                 }, 1000);
-
 
                 const pokemonElement = document.querySelector(`.img-container.${pokemon.name.toLowerCase()}`);
                 pokemonElement.style.animation = "moveForward 0.3s forwards";
-
                 setTimeout(() => {
                     pokemonElement.style.animation = "moveBackward 0.3s forwards";
                 }, 500);
@@ -207,6 +215,8 @@
                         alert(`${mewtwoObject.name} har angrepet ${randomPokemon.name}!`);
                     }, 1000);
 
+                    checkPokemonDead();
+                    checkAllPokemonsDead();
                 }
             }
             checkMewtwoDead();
@@ -228,6 +238,7 @@
         function updatePokemonHealth(pokemon) {
             const healthBar = document.querySelector(`.${pokemon.name.toLowerCase()}-health`);
             const healthText = document.querySelector(`.${pokemon.name.toLowerCase()}-health-txt`);
+            pokemon.currentHP = Math.max(pokemon.currentHP, 0);
             const maxHP = pokemon.maxHP;
             const currentHP = pokemon.currentHP;
             const healthPercentage = (currentHP / maxHP) * 100;
@@ -236,8 +247,46 @@
             healthBar.style.width = `${healthPercentage}%`;
         }
 
+        function checkPokemonDead() {
+            for (let i = 0; i < pokemonArray.length; i++) {
+                if (pokemonArray[i].currentHP <= 0) {
+                    pokemonArray[i].alive = false;
+                    let pokemonElement = document.querySelector(".img-container." + pokemonArray[i].name.toLowerCase());
+                    if (pokemonElement) {
+                        setTimeout(function () {
+                            pokemonElement.remove();
+                        }, 0);
+                    }
+                }
+            }
+            checkAllPokemonsDead();
+        }
 
-        //Fikse å sjekke om pokemon er død - hva skal skje når de dør?
+        //Sjekker alle sin currentHP, hvis den er lik 0 eller lavere så kjører den ut alert om at spillet er tapt. 
+
+        function checkAllPokemonsDead() {
+            const allPokemonsDead = pokemonArray.every(pokemon => pokemon.currentHP <= 0);
+            if (allPokemonsDead) {
+                setTimeout(function () {
+                    alert(`Game over!`);
+                }, 0);
+            }
+        }
+
+        // funksjon for å fetche abilitiene til pokemonene
+        function fetchPokemonAbilities(pokemon) {
+            return fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon}/`)
+                .then(res => res.json())
+                .then(data => {
+                    return data.abilities.map(ability => ability.ability.name);
+                });
+        }
+
+        // Random ability attack funksjon
+        function selectAbility(abilities) {
+            return abilities[Math.floor(Math.random() * abilities.length)];
+        }
+
         // en ide til! tenkkkkkk
         //Implementere Switch funksjon
         //implementere upgrade når de har attacka MewTwo 5 ganger, de får også da nye stats mtp den nye oppgraderingen
