@@ -23,7 +23,7 @@ p {
 }
 
 /* Healthbars */
-.hero-health-containers {
+.pokemon-health-containers {
   position: relative;
   left: 1%;
 }
@@ -110,7 +110,7 @@ p {
   left: 28%;
 }
 
-.hero {
+.pokemon {
   height: 250px;
 }
 
@@ -121,4 +121,23 @@ p {
 
 .mewtwo {
   height: 500px;
+}
+
+/* Define animations for moving Pokémon */
+@keyframes moveForward {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(200px);
+  } /* Adjust the distance as needed */
+}
+
+@keyframes moveBackward {
+  0% {
+    transform: translateX(200px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }

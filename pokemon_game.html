@@ -12,9 +12,7 @@
 <body>
 
     <div class="main-container">
-        <!-- Healthbar for pokemons -->
-        <div class="hero-health-containers">
-            <!-- Charmanders health bar -->
+        <div class="pokemon-health-containers">
             <div class="healthbar-container">
                 <div class="healthbar charmander-health"></div>
                 <div class="text-container">
@@ -22,7 +20,6 @@
                     <div class="text-container charmander-health-txt"></div>
                 </div>
             </div>
-            <!-- Pikachus health bar -->
             <div class="healthbar-container">
                 <div class="healthbar pikachu-health"></div>
                 <div class="text-container">
@@ -30,7 +27,6 @@
                     <div class="text-container pikachu-health-txt"></div>
                 </div>
             </div>
-            <!-- Bulbasaur health bar -->
             <div class="healthbar-container">
                 <div class="healthbar bulbasaur-health"></div>
                 <div class="text-container">
@@ -49,13 +45,13 @@
             </div>
         </div>
         <div class="img-container charmander">
-            <img class="hero" src="" alt="Charmander" />
+            <img class="pokemon" src="" alt="Charmander" />
         </div>
         <div class="img-container pikachu">
-            <img class="hero" src="" alt="Pikachu" />
+            <img class="pokemon" src="" alt="Pikachu" />
         </div>
         <div class="img-container bulbasaur">
-            <img class="hero" src="" alt="bulbasaur" />
+            <img class="pokemon" src="" alt="bulbasaur" />
         </div>
         <div class="enemy-container">
             <div class="img-container mewtwo-container">
@@ -75,7 +71,7 @@
                     name: data.name,
                     maxHP: data.stats[0].base_stat,
                     currentHP: data.stats[0].base_stat,
-                    damage: 100,
+                    damage: 10,
                     alive: true,
                     id: 0
                 });
@@ -96,7 +92,7 @@
                     name: data.name,
                     maxHP: data.stats[0].base_stat,
                     currentHP: data.stats[0].base_stat,
-                    damage: 400,
+                    damage: 10,
                     alive: true,
                     id: 1
                 });
@@ -117,7 +113,7 @@
                     name: data.name,
                     maxHP: data.stats[5].base_stat,
                     currentHP: data.stats[5].base_stat,
-                    damage: 400,
+                    damage: 10,
                     alive: true,
                     id: 2
                 });
@@ -131,16 +127,18 @@
                 bulbasaurHealthBar.style.width = `${(bulbasaurHealth / pokemonArray[2].maxHP) * 100}%`;
             });
 
-        // Fetch Mewtwos data 
+
         fetch("https://pokeapi.co/api/v2/pokemon/mewtwo/")
             .then((res) => res.json())
             .then((data) => {
                 mewtwoObject = {
                     maxHP: data.stats[0].base_stat,
                     currentHP: data.stats[0].base_stat,
-                    damage: 200,
+                    damage: 10,
                     alive: true,
+                    name: data.name
                 };
+
                 document.querySelector(".mewtwo-container").innerHTML = `<img class="mewtwo" src="${data.sprites.front_default}" alt="Mewtwo" />`;
 
                 const mewtwoHealth = data.stats[0].base_stat;
@@ -151,10 +149,34 @@
             })
             .catch((error) => console.log("Error fetching Mewtwo's data:", error));
 
+
+
         // Attack funksjon
-        function attackMewtwo(hero) {
-            console.log(`${hero.name} attacks Mewtwo!`);
+        function attackMewtwo(pokemon) {
+            console.log(`${pokemon.name} attacks Mewtwo!`);
+            if (pokemon.alive) {
+                const damage = pokemon.damage;
+                mewtwoObject.currentHP -= damage;
+
+                document.querySelector(".enemy-health-txt").textContent = `${mewtwoObject.currentHP} / ${mewtwoObject.maxHP} HP`;
+
+                setTimeout(() => {
+                    alert(`${pokemon.name} har angrepet og gitt ${damage} i damage til ${mewtwoObject.name}!`);
+                }, 1000);
+
+
+                const pokemonElement = document.querySelector(`.img-container.${pokemon.name.toLowerCase()}`);
+                pokemonElement.style.animation = "moveForward 0.3s forwards";
+
+                setTimeout(() => {
+                    pokemonElement.style.animation = "moveBackward 0.3s forwards";
+                }, 500);
+
+                checkMewtwoDead();
+                mewtwoAttackBack();
+            }
         }
+
 
         // Event listeners for klikk
         document.querySelector(".img-container.charmander").addEventListener("click", function () {
@@ -168,6 +190,59 @@
         document.querySelector(".img-container.bulbasaur").addEventListener("click", function () {
             attackMewtwo(pokemonArray[2]);
         });
+
+        function mewtwoAttackBack() {
+            if (mewtwoObject.alive) {
+                const alivePokemons = pokemonArray.filter(pokemon => pokemon.alive)
+
+                if (alivePokemons.length > 0) {
+                    const randomPokemon = alivePokemons[Math.floor(Math.random() * alivePokemons.length)];
+                    const damage = mewtwoObject.damage;
+
+                    randomPokemon.currentHP -= damage;
+
+                    updatePokemonHealth(randomPokemon);
+
+                    setTimeout(() => {
+                        alert(`${mewtwoObject.name} har angrepet ${randomPokemon.name}!`);
+                    }, 1000);
+
+                }
+            }
+            checkMewtwoDead();
+        }
+
+        function checkMewtwoDead() {
+            if (mewtwoObject.currentHP <= 0) {
+                let mewtwoEnemy = document.querySelector(".mewtwo");
+                if (mewtwoEnemy) {
+                    mewtwoEnemy.remove();
+                }
+
+                setTimeout(function () {
+                    alert(`Gratulerer, du har vunnet spillet!`);
+                }, 0);
+            }
+        }
+
+        function updatePokemonHealth(pokemon) {
+            const healthBar = document.querySelector(`.${pokemon.name.toLowerCase()}-health`);
+            const healthText = document.querySelector(`.${pokemon.name.toLowerCase()}-health-txt`);
+            const maxHP = pokemon.maxHP;
+            const currentHP = pokemon.currentHP;
+            const healthPercentage = (currentHP / maxHP) * 100;
+
+            healthText.textContent = `${currentHP} / ${maxHP} HP`;
+            healthBar.style.width = `${healthPercentage}%`;
+        }
+
+
+        //Fikse å sjekke om pokemon er død - hva skal skje når de dør?
+        // en ide til! tenkkkkkk
+        //Implementere Switch funksjon
+        //implementere upgrade når de har attacka MewTwo 5 ganger, de får også da nye stats mtp den nye oppgraderingen
+        //Finne en animasjon for når man har vunnet? kanske et bilde som dukker opp av en pokal? idkkkk må tenke på det
+
 
     </script>
 </body>
