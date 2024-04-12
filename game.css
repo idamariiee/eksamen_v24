@@ -86,41 +86,56 @@ p {
   z-index: 2;
 }
 
-/* Characters */
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
+}
 .img-container {
   position: absolute;
 }
 
+.none {
+  display: none;
+}
+
+.block {
+  display: block;
+}
+
 .img-container:hover img {
-  transform: scale(1.1);
+  transform: scale(1.5);
 }
 
 .charmander {
-  bottom: 5%;
-  left: 45%;
+  bottom: 12%;
+  left: 55%;
 }
 
-.pikachu {
+.pikachu,
+.raichu {
   left: 10%;
-  bottom: 1%;
+  bottom: 6%;
 }
 
 .bulbasaur {
-  bottom: 1%;
+  bottom: 7%;
   left: 28%;
 }
 
 .pokemon {
-  height: 250px;
+  height: 150px;
 }
 
 .mewtwo-container {
-  bottom: 5%;
+  bottom: 8%;
   right: 5%;
 }
 
 .mewtwo {
-  height: 500px;
+  height: 300px;
 }
 
 /* Define animations for moving Pokémon */

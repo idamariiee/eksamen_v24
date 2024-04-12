@@ -34,6 +34,13 @@
                     <div class="text-container bulbasaur-health-txt"></div>
                 </div>
             </div>
+            <div class="healthbar-container">
+                <div class="healthbar raichu-health"></div>
+                <div class="text-container">
+                    <p id="raichu-name-txt">Raichu</p>
+                    <div class="text-container raichu-health-txt"></div>
+                </div>
+            </div>
         </div>
         <div class="enemy-health-container">
             <div class="healthbar-container">
@@ -47,15 +54,18 @@
         <div class="img-container charmander">
             <img class="pokemon" src="" alt="Charmander" />
         </div>
-        <div class="img-container pikachu">
+        <div class="img-container pikachu block">
             <img class="pokemon" src="" alt="Pikachu" />
         </div>
-        <div class="img-container bulbasaur">
-            <img class="pokemon" src="" alt="bulbasaur" />
+        <div class="img-container raichu none">
+            <img class="pokemon" src="" alt="raichu" />
         </div>
         <div class="enemy-container">
             <div class="img-container mewtwo-container">
             </div>
+        </div>
+        <div class="img-container bulbasaur">
+            <img class="pokemon" src="" alt="bulbasaur" />
         </div>
     </div>
 
@@ -76,7 +86,7 @@
                     id: 0
                 });
 
-                document.querySelector(".charmander img").src = data.sprites.front_default;
+                document.querySelector(".charmander img").src = data.sprites.other.showdown.front_default;
 
                 const charmanderHealth = data.stats[0].base_stat;
                 document.querySelector(".charmander-health-txt").textContent = `${charmanderHealth} / ${charmanderHealth} HP`;
@@ -97,13 +107,34 @@
                     id: 1
                 });
 
-                document.querySelector(".pikachu img").src = data.sprites.front_default;
+                document.querySelector(".pikachu img").src = data.sprites.other.showdown.front_default;
 
                 const pikachuHealth = data.stats[0].base_stat;
                 document.querySelector(".pikachu-health-txt").textContent = `${pikachuHealth} / ${pikachuHealth} HP`;
 
                 const pikachuHealthBar = document.querySelector(".pikachu-health");
                 pikachuHealthBar.style.width = `${(pikachuHealth / pokemonArray[1].maxHP) * 100}%`;
+            });
+
+        fetch("https://pokeapi.co/api/v2/pokemon/raichu/")
+            .then((res) => res.json())
+            .then((data) => {
+                pokemonArray.push({
+                    name: data.name,
+                    maxHP: data.stats[0].base_stat,
+                    currentHP: data.stats[0].base_stat,
+                    damage: 10,
+                    alive: true,
+                    id: 2
+                });
+
+                document.querySelector(".raichu img").src = data.sprites.other.showdown.front_default;
+
+                const raichuHealth = data.stats[0].base_stat;
+                document.querySelector(".raichu-health-txt").textContent = `${raichuHealth} / ${raichuHealth} HP`;
+
+                const raichuHealthBar = document.querySelector(".raichu-health");
+                raichuHealthBar.style.width = `${(raichuHealth / pokemonArray[2].maxHP) * 100}%`;
             });
 
         fetch("https://pokeapi.co/api/v2/pokemon/bulbasaur/")
@@ -115,17 +146,18 @@
                     currentHP: data.stats[5].base_stat,
                     damage: 10,
                     alive: true,
-                    id: 2
+                    id: 3
                 });
 
-                document.querySelector(".bulbasaur img").src = data.sprites.front_default;
+                document.querySelector(".bulbasaur img").src = data.sprites.other.showdown.front_default;
 
                 const bulbasaurHealth = data.stats[5].base_stat;
                 document.querySelector(".bulbasaur-health-txt").textContent = `${bulbasaurHealth} / ${bulbasaurHealth} HP`;
 
                 const bulbasaurHealthBar = document.querySelector(".bulbasaur-health");
-                bulbasaurHealthBar.style.width = `${(bulbasaurHealth / pokemonArray[2].maxHP) * 100}%`;
+                bulbasaurHealthBar.style.width = `${(bulbasaurHealth / pokemonArray[3].maxHP) * 100}%`;
             });
+
 
 
         fetch("https://pokeapi.co/api/v2/pokemon/mewtwo/")
@@ -134,12 +166,12 @@
                 mewtwoObject = {
                     maxHP: data.stats[0].base_stat,
                     currentHP: data.stats[0].base_stat,
-                    damage: 10,
+                    damage: 15,
                     alive: true,
                     name: data.name
                 };
 
-                document.querySelector(".mewtwo-container").innerHTML = `<img class="mewtwo" src="${data.sprites.front_default}" alt="Mewtwo" />`;
+                document.querySelector(".mewtwo-container").innerHTML = `<img class="mewtwo" src="${data.sprites.other.showdown.front_default}" alt="Mewtwo" />`;
 
                 const mewtwoHealth = data.stats[0].base_stat;
                 document.querySelector(".enemy-health-txt").textContent = `${mewtwoHealth} / ${mewtwoHealth} HP`;
@@ -150,9 +182,108 @@
             .catch((error) => console.log("Error fetching Mewtwo's data:", error));
 
 
+        let pikachuAttackCount = 0;
 
-        // Attack funksjon
+        document.addEventListener("DOMContentLoaded", function () {
+            const pikachuImageContainer = document.querySelector(".img-container.pikachu");
+
+            pikachuImageContainer.addEventListener("click", function () {
+                pikachuAttackCount++;
+
+                // Sjekk om pikachu kan angripe Mewtwo eller om den skal evolveC
+                if (pikachuAttackCount < 4) {
+                    attackMewtwo(pokemonArray[1]);
+                } else {
+                    evolvePikachu();
+                }
+            });
+        });
+
+
+        document.querySelector(".img-container.charmander").addEventListener("click", function () {
+            attackMewtwo(pokemonArray[0]);
+        });
+
+        document.querySelector(".img-container.bulbasaur").addEventListener("click", function () {
+            attackMewtwo(pokemonArray[3]);
+        });
+
+        document.querySelector(".img-container.raichu").addEventListener("click", function () {
+            const raichuContainer = document.querySelector(".img-container.raichu");
+            if (raichuContainer.style.display === "block") {
+                attackMewtwo(pokemonArray[3]);
+            }
+        });
+
+        function evolvePikachu() {
+            const pikachuContainer = document.querySelector(".img-container.pikachu");
+            const raichuContainer = document.querySelector(".img-container.raichu");
+
+            // Endre synglihet av pikachu og raichu bilde containere
+            pikachuContainer.classList.remove("block");
+            pikachuContainer.classList.add("none");
+            raichuContainer.classList.remove("none");
+            raichuContainer.classList.add("block");
+
+            // Set Pikachu's current HP to 0 og oppdatere og fjernehealthbaren
+            pokemonArray[1].currentHP = 0;
+            updatePokemonHealth(pokemonArray[1]);
+
+            // Legger til event listener på rainchu container
+            raichuContainer.addEventListener("click", function () {
+                attackMewtwo(pokemonArray[2]);
+            });
+
+            alert("Pikachu has evolved into Raichu!");
+
+            pikachuAttackCount = 0;
+        }
+
+
+        function mewtwoAttackBack() {
+            if (mewtwoObject.alive) {
+                const alivePokemons = pokemonArray.filter(pokemon => pokemon.alive)
+
+                if (alivePokemons.length > 0) {
+                    const randomPokemon = alivePokemons[Math.floor(Math.random() * alivePokemons.length)];
+                    const damage = mewtwoObject.damage;
+
+                    randomPokemon.currentHP -= damage;
+
+                    updatePokemonHealth(randomPokemon);
+
+                    setTimeout(() => {
+                        alert(`${mewtwoObject.name} har angrepet ${randomPokemon.name}!`);
+                    }, 200);
+
+                    checkPokemonDead();
+                    checkAllPokemonsDead();
+                }
+            }
+            checkMewtwoDead();
+        }
+
+        function checkMewtwoDead() {
+            if (mewtwoObject.currentHP <= 0) {
+                let mewtwoEnemy = document.querySelector(".mewtwo");
+                if (mewtwoEnemy) {
+                    mewtwoEnemy.remove();
+                }
+
+                setTimeout(function () {
+                    alert(`Gratulerer, du har vunnet spillet!`);
+                }, 0);
+            }
+        }
+
         async function attackMewtwo(pokemon) {
+            if (pokemon.name === "Pikachu") {
+                pikachuAttackCount++;
+                if (pikachuAttackCount === 2) {
+                    evolvePikachu();
+                }
+            }
+
             console.log(`${pokemon.name} attacks Mewtwo!`);
             if (pokemon.alive) {
                 const damage = pokemon.damage;
@@ -171,8 +302,8 @@
                 document.querySelector(".enemy-health-txt").textContent = `${mewtwoObject.currentHP} / ${mewtwoObject.maxHP} HP`;
 
                 setTimeout(() => {
-                    alert(`${pokemon.name} har angrepet og gitt ${damage} i damage til ${mewtwoObject.name} med ${selectedAbility}!`);
-                }, 1000);
+                    alert(`${pokemon.name} har angrepet ${mewtwoObject.name} og gitt ${damage} i damage med ${selectedAbility}!`);
+                }, 700);
 
                 const pokemonElement = document.querySelector(`.img-container.${pokemon.name.toLowerCase()}`);
                 pokemonElement.style.animation = "moveForward 0.3s forwards";
@@ -180,46 +311,11 @@
                     pokemonElement.style.animation = "moveBackward 0.3s forwards";
                 }, 500);
 
-                checkMewtwoDead();
-                mewtwoAttackBack();
+                setTimeout(() => {
+                    checkMewtwoDead();
+                    mewtwoAttackBack();
+                }, 1000);
             }
-        }
-
-
-        // Event listeners for klikk
-        document.querySelector(".img-container.charmander").addEventListener("click", function () {
-            attackMewtwo(pokemonArray[0]);
-        });
-
-        document.querySelector(".img-container.pikachu").addEventListener("click", function () {
-            attackMewtwo(pokemonArray[1]);
-        });
-
-        document.querySelector(".img-container.bulbasaur").addEventListener("click", function () {
-            attackMewtwo(pokemonArray[2]);
-        });
-
-        function mewtwoAttackBack() {
-            if (mewtwoObject.alive) {
-                const alivePokemons = pokemonArray.filter(pokemon => pokemon.alive)
-
-                if (alivePokemons.length > 0) {
-                    const randomPokemon = alivePokemons[Math.floor(Math.random() * alivePokemons.length)];
-                    const damage = mewtwoObject.damage;
-
-                    randomPokemon.currentHP -= damage;
-
-                    updatePokemonHealth(randomPokemon);
-
-                    setTimeout(() => {
-                        alert(`${mewtwoObject.name} har angrepet ${randomPokemon.name}!`);
-                    }, 1000);
-
-                    checkPokemonDead();
-                    checkAllPokemonsDead();
-                }
-            }
-            checkMewtwoDead();
         }
 
         function checkMewtwoDead() {
@@ -287,9 +383,7 @@
             return abilities[Math.floor(Math.random() * abilities.length)];
         }
 
-        // en ide til! tenkkkkkk
-        //Implementere Switch funksjon
-        //implementere upgrade når de har attacka MewTwo 5 ganger, de får også da nye stats mtp den nye oppgraderingen
+
         //Finne en animasjon for når man har vunnet? kanske et bilde som dukker opp av en pokal? idkkkk må tenke på det
 
 
