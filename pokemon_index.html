@@ -204,7 +204,7 @@
 
             if (filteredPokemons.length === 0) {
                 setTimeout(() => {
-                    alert(`Ingen av de 50 pokemonene er av typen ${typeName.charAt(0).toUpperCase() + typeName.slice(1)}, dessverre! 😭`);
+                    alert(`Det er ingen pokemon av typen ${typeName.charAt(0).toUpperCase() + typeName.slice(1)}, dessverre! 😭`);
                 }, 100);
             } else {
                 filteredPokemons.forEach(pokemon => createPokemonCard(pokemon));
