@@ -18,15 +18,16 @@
         <label for="pokemon-name">Navn:</label>
         <input type="text" id="pokemon-name" required>
         <select id="pokemonTypeDropdown"> </select>
-        <button type="submit">Lag Pokémon</button>
+        <button type="submit">Lag Pokemon</button>
     </form>
     <div class="pokemon-container"></div>
 
     <script>
 
         // Globale variabler
-        let allPokemons = [];
+        let apiPokemons = [];
         let userPokemons = [];
+        let filteredPokemons = [];
 
         const filterContainer = document.querySelector('.filter-container')
         const pokemonContainer = document.querySelector('.pokemon-container')
@@ -51,7 +52,7 @@
                 typeBtn.textContent = type.name.charAt(0).toUpperCase() + type.name.slice(1);
                 typeBtn.classList.add('typeBtn')
                 typeBtn.addEventListener('click', () => {
-                    filterType(type.name);
+                    filterType(type.name, apiPokemons.concat(userPokemons));
                     activeButton(typeBtn);
                 });
 
@@ -86,7 +87,7 @@
             fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
                 .then(response => response.json())
                 .then((data) => {
-                    allPokemons.push(data);
+                    apiPokemons.push(data);
                     createPokemonCard(data)
                 })
                 .catch(error => console.error('Error fetching Pokemons', error));
@@ -174,6 +175,7 @@
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Rediger';
             editBtn.classList.add('editBtn');
+            editBtn.addEventListener('click', () => showEditForm(card, pokemon));
 
             const typeColor = showTypeColor(pokemon.types[0].type.name);
             card.style.boxShadow = `inset 0 0 22px ${typeColor}`;
@@ -189,7 +191,7 @@
         }
 
         // Fjern alle eksisterende pokemonkort fra nettsiden og filtrer pokemons basert på den første typen. Samtidig lage nye pokemonkort for de som blir filtrert
-        function filterType(typeName) {
+        function filterType(typeName, allPokemons, newPokemon) {
             pokemonContainer.innerHTML = '';
 
             const filteredUserPokemons = userPokemons.filter(pokemon => {
@@ -215,7 +217,7 @@
         function clearFilters() {
             filterContainer.querySelectorAll('.active').forEach(btn => btn.classList.remove('active'));
             pokemonContainer.innerHTML = '';
-            const allPokemonsToShow = allPokemons.concat(userPokemons);
+            const allPokemonsToShow = apiPokemons.concat(userPokemons);
             allPokemonsToShow.forEach(pokemon => createPokemonCard(pokemon));
         }
 
@@ -227,29 +229,61 @@
 
         // Hente lagrede pokemons fra local storage, legge pokemons til userpokemons arrayet og vise frem kortene
         function storePokemonCard(pokemon) {
-            userPokemons.push(pokemon);
-            createPokemonCard(pokemon);
             const savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
 
-            if (savedPokemons.length >= 5) {
-                alert('Du kan kun lagre 5 kort om gangen, slett ett kort for å få lagre ett nytt.');
+            // Sjekk om pokemonen allerede er lagret
+            const isAlreadySaved = savedPokemons.some(savedPokemon => savedPokemon.name === pokemon.name);
+            if (isAlreadySaved) {
                 return;
             }
 
+            // Legg pokemon til savedPokemons array
             savedPokemons.push(pokemon);
+
+            // Sjekk om det er oversteget antall mulige lagrede pokemons
+            if (savedPokemons.length > 5) {
+                alert('Du kan kun lagre opptil 5 pokemon om gangen, slett en pokemon for å lagre en ny!');
+                return;
+            }
+
+            // Oppdater container for alle pokemons med pokemons som er lagt til
+            pokemonContainer.innerHTML = '';
+            const allPokemonsToShow = apiPokemons.concat(userPokemons);
+            allPokemonsToShow.forEach(pokemon => createPokemonCard(pokemon));
+
+            if (!isAlreadySaved) {
+                userPokemons.push(pokemon);
+                const card = createPokemonCard(pokemon);
+            }
+
+            // Oppdater localStorage
             localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
 
+            // Oppdater savedPokemonContainer
             savedPokemonContainer.innerHTML = '';
-
-            savedPokemons.forEach(pokemon => {
-                const card = createSavedPokemonCard(pokemon);
+            savedPokemons.forEach(savedPokemon => {
+                const card = createSavedPokemonCard(savedPokemon);
                 savedPokemonContainer.appendChild(card);
+
             });
 
-            pokemonContainer.innerHTML = '';
-            const allPokemonsToShow = allPokemons.concat(userPokemons);
-            allPokemonsToShow.forEach(pokemon => createPokemonCard(pokemon));
+            // Sjekk om typen til nye pokemon matcher active filter
+            if (activeFilter) {
+                const typeName = activeFilter.textContent.toLowerCase();
+                if (pokemon.types[0].type.name === typeName) {
+                    pokemonContainer.appendChild(card);
+                }
+            } else {
+                pokemonContainer.appendChild(card);
+            }
+
+            saveBtn.addEventListener('click', () => {
+                storePokemonCard(pokemon, activeFilter);
+            });
+            userPokemons.push(pokemon);
         }
+
+
 
         // Henter brukerens pokemon fra lokal lagring
         function UserPokemonsFromLocalStorage() {
@@ -365,12 +399,92 @@
                 document.getElementById('pokemon-name').value = '';
 
                 storePokemonCard(newPokemon);
+                createPokemonCard(newPokemon);
             });
 
             fetchPokemonTypes();
             fetchPokemons(50);
             savedPokemons();
         });
+
+        // Må fikse, får ikke oppdatert i localstorage uten at hele greia knekker (blir undefined) og alle lagrede forsvinner derfra
+
+        function showEditForm(card, pokemon) {
+            const editForm = document.createElement('form');
+            editForm.id = 'edit-pokemon-form';
+
+            const nameLabel = document.createElement('label');
+            nameLabel.textContent = 'Name:';
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = pokemon.name;
+            nameInput.required = true;
+
+            const typeLabel = document.createElement('label');
+            typeLabel.textContent = 'Type:';
+            const typeInput = document.createElement('select');
+            const types = Object.keys(typeColors);
+            types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                typeInput.appendChild(option);
+            });
+            typeInput.value = pokemon.types[0].type.name;
+
+            const submitButton = document.createElement('button');
+            submitButton.textContent = 'Save Changes';
+
+            editForm.appendChild(nameLabel);
+            editForm.appendChild(nameInput);
+            editForm.appendChild(typeLabel);
+            editForm.appendChild(typeInput);
+            editForm.appendChild(submitButton);
+
+            submitButton.addEventListener('click', event => {
+                event.preventDefault();
+                const newName = nameInput.value.trim();
+                const newType = typeInput.value.toLowerCase();
+                const index = userPokemons.findIndex(p => p.name === pokemon.name);
+                if (index !== -1) {
+                    deleteOldPokemonFromLocalStorage(pokemon.name);
+                    userPokemons.splice(index, 1);
+                    userPokemons.push({
+                        name: newName,
+                        types: [{ type: { name: newType } }],
+                        sprites: { front_default: pokemon.sprites.front_default }
+                    });
+                    localStorage.setItem('savedPokemons', JSON.stringify(userPokemons));
+                    savedPokemonContainer.innerHTML = '';
+                    userPokemons.forEach(pokemon => {
+                        const card = createSavedPokemonCard(pokemon);
+                        savedPokemonContainer.appendChild(card);
+                    });
+                    pokemon.name = newName;
+                    pokemon.types[0].type.name = newType;
+                    card.querySelector('.name').textContent = newName.charAt(0).toUpperCase() + newName.slice(1);
+                    card.querySelector('.type').textContent = newType.charAt(0).toUpperCase() + newType.slice(1);
+                    const typeColor = showTypeColor(newType);
+                    card.style.boxShadow = `inset 0 0 22px ${typeColor}`;
+                    editForm.remove();
+                } else {
+                    console.error('Pokemon not found in userPokemons:', pokemon.name);
+                }
+            });
+
+            card.appendChild(editForm);
+        };
+
+
+
+        function deleteOldPokemonFromLocalStorage(pokemonName) {
+            let savedPokemons = JSON.parse(localStorage.getItem('savedPokemons')) || [];
+            savedPokemons = savedPokemons.filter(p => p.name !== pokemonName);
+            localStorage.setItem('savedPokemons', JSON.stringify(savedPokemons));
+        }
+
+
+
 
     </script>
 </body>
